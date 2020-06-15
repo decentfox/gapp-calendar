@@ -1,7 +1,8 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
+from starlette import status
 
 from .calendar import DateSchemaFactory
 from .models import Calendar, Event
@@ -26,6 +27,13 @@ async def calender_events(
     """
     date_start = date_start or date(1900, 1, 1)
     date_end = date_end or date(2100, 12, 31)
+
+    if date_end < date_start:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "The end date you queried occurs before the start date.",
+        )
+
     year_start = date_start.year
     year_end = date_end.year
     calendar = await Calendar.get_or_404(calendar_id)
@@ -48,14 +56,13 @@ async def calender_events(
                     )
                 )
         else:
+            date_ = event_schema.resolve_solar(event_schema.year)
+            if date_ < date_start or date_ > date_end:
+                continue
             events.append(
-                dict(
-                    date=event_schema.resolve_solar(event_schema.year),
-                    summary=event.summary,
-                    description=event.description,
-                )
+                dict(date=date_, summary=event.summary, description=event.description)
             )
-    return dict(calendar=calendar.to_dict(), events=events,)
+    return dict(calendar=calendar.to_dict(), events=events)
 
 
 def init_app(app: FastAPI):
