@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "gapp-calendar"
+version = "0.1.0"
+description = "GINO App extension for calendar data."
+authors = ["DecentFoX <service@decentfox.com>"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+authlib-gino = {version = "^0.1.0", extras = ["app"]}
+borax = "^3.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.plugins."gino.app.extensions"]
+"calendar" = "gapp_calendar:init_app"
+
+[tool.poetry.plugins."gino.app.migrations"]
+"calendar" = "gapp_calendar:migrations"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
